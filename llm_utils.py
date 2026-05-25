@@ -2,20 +2,32 @@ import os
 import json
 import google.generativeai as genai
 
-# Try to load API key from environment variable, then Streamlit secrets, then fallback to local hardcoded key
+# Try to load API key from environment variable, then Streamlit secrets
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if not GEMINI_API_KEY:
     try:
         import streamlit as st
-        if "GEMINI_API_KEY" in st.secrets:
+        if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
             GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
     except Exception:
         pass
 
+# Fallback: manually parse .streamlit/secrets.toml if running raw Python scripts locally
 if not GEMINI_API_KEY:
-    # Fallback to local key for testing
-    GEMINI_API_KEY = "AIzaSyDH8pB9gGoXd-tY0QmWVIe-Q46v5vTQmIo"
+    try:
+        secrets_path = os.path.join(".streamlit", "secrets.toml")
+        if os.path.exists(secrets_path):
+            with open(secrets_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if "GEMINI_API_KEY" in line and "=" in line:
+                        parts = line.split("=", 1)
+                        val = parts[1].strip().strip('"').strip("'")
+                        if val:
+                            GEMINI_API_KEY = val
+                            break
+    except Exception:
+        pass
 
 def call_openai_json(prompt: str) -> dict:
     """

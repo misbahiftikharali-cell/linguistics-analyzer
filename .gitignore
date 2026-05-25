@@ -1,0 +1,10 @@
+.streamlit/secrets.toml
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+*.docx
+!test_report.docx
+!test_full_report.docx

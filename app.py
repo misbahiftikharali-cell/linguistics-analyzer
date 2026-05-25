@@ -139,6 +139,30 @@ if start_analysis and uploaded_file is not None:
             
         st.markdown("---")
         
+        # Check for any API or processing errors in the results
+        api_error = None
+        for agent_name in ["Agent1", "Agent2", "Agent3", "Agent4", "Agent5"]:
+            agent_res = results.get(agent_name)
+            if isinstance(agent_res, dict) and "error" in agent_res:
+                api_error = agent_res["error"]
+                break
+        
+        if api_error:
+            st.error(f"🚨 **Pipeline Execution Error:** {api_error}")
+            if "API key" in api_error or "reported as leaked" in api_error or "403" in api_error or "401" in api_error or "API Key" in api_error:
+                st.warning("💡 **Linguistic Analyzer API Key Issue:**\n\n"
+                           "Your Google Gemini API Key is missing, invalid, or has been **revoked by Google** because it was exposed in a public repository (e.g. uploaded to GitHub).\n\n"
+                           "**How to fix this:**\n"
+                           "1. Go to [Google AI Studio](https://aistudio.google.com/) and create a new Gemini API Key.\n"
+                           "2. Open your Streamlit dashboard at [share.streamlit.io](https://share.streamlit.io/).\n"
+                           "3. Go to your app's **Settings** -> **Secrets** and set/update your new key:\n"
+                           "   ```toml\n"
+                           "   GEMINI_API_KEY = \"your-new-gemini-api-key\"\n"
+                           "   ```\n"
+                           "4. Click **Save** and reboot/refresh the app.\n\n"
+                           "*Note: To run it locally, create a file named `.env` in the project root directory with: `GEMINI_API_KEY=your-new-gemini-api-key`.*")
+            st.stop()
+        
         # ==========================================
         # SUMMARY DASHBOARD (Agent 5)
         # ==========================================
